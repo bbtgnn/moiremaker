@@ -27,6 +27,7 @@ var COLORS = [];
 var canvas_parent_id = "sketch";
 var canvas_parent;
 var ctrl_manager;
+var json = {};
 
 
 function setup() {
@@ -99,10 +100,13 @@ function setup() {
 	btn_manager.add_ctrls_from_list([
 		new CtrlButton("generate", buttonGenerate, {label:"Generate!"} ),
 		new CtrlButton("randomize", buttonRandomize, {label:"Randomize all values!"} ),
-		new CtrlButton("save", buttonSave, {label:"Save!"} )
+		new CtrlButton("save", buttonSave, {label:"Save!"} ),
+		new CtrlButton("savejson", buttonJSON, {label:"Save JSON config!"} )
 	]);
 	btn_manager.append_ctrls("#controls .buttons");
 
+	// Drawing first sketch
+	updateConfig();
 }
 
 
@@ -113,7 +117,6 @@ function draw() {
 
 	for (var i=0; i<LAYERS_CONFIG.length; i++) {
 		var c = random_choice(COLORS);
-		console.log(RENDERER)
 		if (RENDERER == LayerRendererDotted) {
 			noStroke();
 			fill(LAYERS_CONFIG[i].color);
@@ -139,6 +142,12 @@ function windowResized() {
 
 function buttonSave() {
 	saveCanvas();
+}
+
+function buttonJSON() {
+	var writer = createWriter('newFile.json');
+	writer.write(JSON.stringify(json));
+	writer.close();
 }
 
 
@@ -248,6 +257,17 @@ function updateConfig() {
 			layer : new lyr(box_lyr, ang_lyr, frq_lyr, prp_lyr),
 			color : random_choice(COLORS)
 		});
+	}
+
+	// Creating json for config
+	json = {};
+	for (var i=0; i<LAYERS_CONFIG.length; i++) {
+		var layer = LAYERS_CONFIG[i].layer;
+		var layer_copy = {...layer}
+		delete layer_copy.paths;
+		delete layer_copy.box.c;
+		delete layer_copy.centers_x;
+		json[layer.constructor.name] = layer_copy;
 	}
 
 }
